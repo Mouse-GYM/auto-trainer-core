@@ -1,20 +1,16 @@
 import ctypes
 import logging
-import queue
-from enum import IntEnum
+
 from multiprocessing import RawArray, Value
 
 import numpy
 
+from autotrainer.core.fixed_array_queue import BufferResult
+
 logger = logging.getLogger(__name__)
 
 
-class BufferResult(IntEnum):
-    Ok = 0,
-    Overflow = 1,
-
-
-class CircularImageBuffer:
+class FixedArrayMultiQueue:
     def __init__(self, depth: int, cam_count: int, frames_per_camera: int, shape: (int, int), primary: int = 0):
         # indexing: [buffer][camera][batch_frame]
         self._buffers = list()

@@ -15,7 +15,7 @@ class BufferResult(IntEnum):
     Overflow = 1,
 
 
-class CircularSingleImageBuffer:
+class FixedArrayQueue:
     def __init__(self, depth: int, shape: (int, int)):
         # indexing: [buffer]
         self._buffers = list()
@@ -34,8 +34,6 @@ class CircularSingleImageBuffer:
             self._buffers.append(RawArray(ctypes.c_ubyte, self._byte_count))
             self._is_dirty.append(Value(ctypes.c_bool, False))
 
-        self._frame_dest = numpy.zeros(self._shape, dtype='uint8')
-
     @property
     def shape(self):
         return self._shape
@@ -48,7 +46,7 @@ class CircularSingleImageBuffer:
         self._buffer_index.value = 0
         self._read_index.value = 0
 
-    def put(self, content) -> BufferResult:
+    def put(self, content: numpy.ndarray) -> BufferResult:
         buffer_index = self._buffer_index.value
 
         is_overflow = self._is_dirty[buffer_index].value
@@ -69,7 +67,7 @@ class CircularSingleImageBuffer:
 
         return BufferResult.Ok if not is_overflow else BufferResult.Overflow
 
-    def get(self, block: bool = False, timeout: float = 0):
+    def get(self, block: bool = False, timeout: float = 0) -> numpy.ndarray:
         read_index = self._read_index.value
 
         if not self._is_dirty[read_index].value:
@@ -78,7 +76,7 @@ class CircularSingleImageBuffer:
 
         buffer = self._buffers[read_index]
 
-        output = self._frame_dest[:, :] = numpy.frombuffer(buffer, "uint8", self._byte_count).reshape(self.shape)
+        output = numpy.frombuffer(buffer, "uint8", self._byte_count).reshape(self.shape)
 
         self._is_dirty[read_index].value = False
 
