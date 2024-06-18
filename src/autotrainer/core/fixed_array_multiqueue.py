@@ -82,8 +82,7 @@ class FixedArrayMultiQueue:
         is_overflow = self._is_dirty[buffer_index].value
 
         try:
-            memoryview(self._buffers[buffer_index][camera][self._batch_index[camera].value]).cast("B")[
-            :] = content.flatten()
+            memoryview(self._buffers[buffer_index][camera][self._batch_index[camera].value]).cast("B")[:] = content.flatten()
         except IndexError:
             logger.error(f"IndexError {buffer_index} {camera} {self._batch_index[camera].value}")
 

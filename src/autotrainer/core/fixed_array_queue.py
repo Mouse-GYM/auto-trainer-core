@@ -67,6 +67,7 @@ class FixedArrayQueue:
 
         return BufferResult.Ok if not is_overflow else BufferResult.Overflow
 
+    # noinspection PyUnusedLocal
     def get(self, block: bool = False, timeout: float = 0) -> numpy.ndarray:
         read_index = self._read_index.value
 
@@ -89,8 +90,10 @@ class FixedArrayQueue:
 
         return output
 
+    # noinspection PyMethodMayBeStatic
     def empty(self) -> bool:
         return True
 
+    # noinspection PyMethodMayBeStatic
     def qsize(self) -> int:
         return 0
