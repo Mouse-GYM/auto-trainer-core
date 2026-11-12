@@ -1,0 +1,51 @@
+name: Run unit tests
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_call:
+
+jobs:
+  test:
+    name: Install core non-editable and run its tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      FORCE_COLOR: "1"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # setuptools_scm versions from the v* tags
+          fetch-tags: true
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.8"
+
+      - name: Check that uv.lock matches pyproject.toml
+        run: |
+          pip install uv
+          uv lock --check
+
+      - name: Install auto-trainer-core, non-editable, with its test extra
+        run: |
+          set -x
+          pip install --upgrade pip
+          pip install ".[test]"
+          pip list
+
+      - name: Check that the installed core is the one under test
+        run: |
+          python - <<'EOF'
+          import importlib.metadata
+          import autotrainer.core
+          version = autotrainer.core.__version__
+          print(autotrainer.core.__file__, version)
+          assert "site-packages" in autotrainer.core.__file__
+          assert version != "0.0.0", version
+          assert version == importlib.metadata.version("auto-trainer-core"), version
+          EOF
+
+      - name: Test auto-trainer-core
+        run: pytest -v --color=yes
