@@ -46,10 +46,9 @@ test = [
 
 [tool.setuptools_scm]
 version_file = "src/autotrainer/core/_version.py"
-search_parent_directories = true
 
 [tool.setuptools_scm.scm.git]
-describe_command = "git describe --tags --dirty --match 'core-v*' --abbrev=8"
+describe_command = "git describe --tags --dirty --match 'v*' --abbrev=8"
 
 [tool.pytest.ini_options]
 addopts = "-p autotrainer.core.testing --random-order --random-order-bucket=global"

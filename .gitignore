@@ -2,3 +2,23 @@
 *.egg-info/
 /build/
 /dist/
+
+__pycache__/
+*.py[cod]
+*$py.class
+
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+
+.venv/
+venv/
+.env
+
+.idea/
+.DS_Store
+
+# Pyright LSP config (machine-specific conda env path)
+pyrightconfig.json

@@ -32,7 +32,7 @@ def _version_from_checkout(package_dir: Path = _package_dir) -> Optional[str]:
     if not _has_setuptools_scm():
         return None
     try:
-        # cwd supplies core's pyproject.toml, hence the core-v* tag pattern and the parent-directory search
+        # cwd supplies core's pyproject.toml, and with it the v* tag pattern
         out = subprocess.check_output(
             [sys.executable, "-m", "setuptools_scm"], cwd=project_dir, stderr=subprocess.DEVNULL, timeout=30,
         )
