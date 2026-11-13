@@ -42,6 +42,8 @@ test = [
     "pytest >= 8.2, < 9",
     "pytest-mock >= 3, < 4",
     "pytest-random-order >= 1.1, < 2",
+    "coverage >= 6, < 8",
+    "coverage-enable-subprocess ~= 1.0 ; python_version <= '3.8'",
 ]
 
 [tool.setuptools_scm]

@@ -1,0 +1,43 @@
+
+[paths]
+source =
+    */src/auto-trainer-core
+    */site-packages/auto-trainer-core
+
+[run]
+# branch = true
+relative_files = true
+
+source_pkgs =
+    autotrainer.core
+
+omit =
+    */tests/*
+    */autotrainer/core/testing.py
+
+# allow coverage in python sub-processes (subprocess):
+# patch = subprocess  # only valid from coverage 7.10+ but one for py3.8 is stuck lower.
+# patch =
+#   execv
+#   _exit
+#   fork
+#   subprocess
+
+# so using coverage-enable-subprocess for now.
+
+concurrency = thread,multiprocessing
+parallel = true
+# still needed
+
+sigterm = true
+
+# disable_warnings = module-not-imported
+# do not care when one of auto-trainer-* is not imported during a test.
+
+[report]
+show_missing = true
+include_namespace_packages = true
+
+omit =
+    */tests/*
+    */autotrainer/core/testing.py

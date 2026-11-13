@@ -8,8 +8,11 @@ on:
 
 jobs:
   test:
+    strategy:
+      matrix:
+        python_version: [ "3.8" ]  # , "3.9", "3.10", "3.11", "3.12" ]
     name: Install core non-editable and run its tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04  # 3.8 not anymore available in ubuntu-latest
     timeout-minutes: 15
     env:
       FORCE_COLOR: "1"
@@ -21,7 +24,7 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.8"
+          python-version: ${{ matrix.python_version }}
 
       - name: Check that uv.lock matches pyproject.toml
         run: |
@@ -48,4 +51,13 @@ jobs:
           EOF
 
       - name: Test auto-trainer-core
-        run: pytest -v --color=yes
+        run: |
+          export COVERAGE_PROCESS_START="$PWD/.coveragerc"
+          python -m coverage run -m pytest -v --color=yes
+
+      - name: Coverage
+        run: |
+          coverage combine
+          # coverage html
+          echo "FULL COVERAGE"
+          coverage report
