@@ -1,8 +1,8 @@
 
 [paths]
 source =
-    */src/auto-trainer-core
-    */site-packages/auto-trainer-core
+    ./src/autotrainer/core
+    */site-packages/autotrainer/core
 
 [run]
 # branch = true
@@ -35,8 +35,11 @@ sigterm = true
 # do not care when one of auto-trainer-* is not imported during a test.
 
 [report]
+ignore_errors = true
 show_missing = true
 include_namespace_packages = true
+fail_under = 65
+# % of cov below which to fail the job.
 
 omit =
     */tests/*

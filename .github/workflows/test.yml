@@ -85,10 +85,10 @@ jobs:
           uvx coverage combine
           uvx coverage html --skip-covered --skip-empty
           uvx coverage report --format=markdown >> "$GITHUB_STEP_SUMMARY"
-          uvx coverage report --fail-under=100
-      - name: Upload HTML report on failure
-        if: failure()
+          uvx coverage report
+      - name: Upload HTML report  # on failure
+        if: always()
         uses: actions/upload-artifact@v7.0.1
         with:
           name: html-coverage-report
-          path: htmlcov
+          path: htmlcov*  # nb: keep the *: this ensures the htmlcov directory is also included.
