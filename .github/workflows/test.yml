@@ -8,8 +8,13 @@ on:
 
 jobs:
   test:
+    strategy:
+      fail-fast: false  # keep others running if a single fails.
+        # to allow get all the coverage combined at the end.
+      matrix:
+        python_version: [ "3.8", "3.9", "3.10", "3.11", "3.12" ]
     name: Install core non-editable and run its tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04  # 3.8 not anymore available in ubuntu-latest
     timeout-minutes: 15
     env:
       FORCE_COLOR: "1"
@@ -21,7 +26,7 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.8"
+          python-version: ${{ matrix.python_version }}
 
       - name: Check that uv.lock matches pyproject.toml
         run: |
@@ -37,7 +42,9 @@ jobs:
 
       - name: Check that the installed core is the one under test
         run: |
-          python - <<'EOF'
+          # -E : skip any env. variable, 
+          # notably possibly PYTHONOPTIMIZE which turns off assert as used below.
+          python -E - <<'EOF'
           import importlib.metadata
           import autotrainer.core
           version = autotrainer.core.__version__
@@ -48,4 +55,51 @@ jobs:
           EOF
 
       - name: Test auto-trainer-core
-        run: pytest -v --color=yes
+        run: |
+          export COVERAGE_PROCESS_START="$PWD/.coveragerc"
+          export COVERAGE_FILE="$PWD/.coverage"
+          python -m coverage run --parallel-mode -m pytest -v --color=yes
+
+      - name: Upload coverage data
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: coverage-data-${{ matrix.python_version }}
+          path: .coverage.*
+          include-hidden-files: true
+          if-no-files-found: ignore
+
+  coverage:
+    name: Combine coverage and enforce threshold
+    runs-on: ubuntu-latest
+    needs: test
+    if: ${{ !cancelled() }}
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-python@v6.2.0
+        with:
+          python-version: "3.14"
+      - uses: astral-sh/setup-uv@v10.3.3
+      - name: Download coverage data
+        uses: actions/download-artifact@v8.0.1
+        with:
+          pattern: coverage-data-*
+          merge-multiple: true
+      - name: Combine and report
+        env:
+          COV: "uvx --from coverage>=7.10,<8 coverage"
+        run: |
+          uvx coverage --version
+          uvx coverage combine
+          uvx coverage html --fail-under=0 --skip-covered --skip-empty
+          uvx coverage report --fail-under=0 --format=markdown >> "$GITHUB_STEP_SUMMARY"
+      - name: Enforce coverage threshold
+        if: ${{ needs.test.result == 'success' && github.event_name == 'pull_request' }}
+        run: |
+          uvx coverage report
+      - name: Upload HTML report  # on failure
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: html-coverage-report
+          path: htmlcov*  # nb: keep the *: this ensures the htmlcov directory is also included.
