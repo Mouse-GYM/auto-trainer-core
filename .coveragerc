@@ -38,8 +38,10 @@ sigterm = true
 ignore_errors = true
 show_missing = true
 include_namespace_packages = true
-fail_under = 65
+
+fail_under = 73
 # % of cov below which to fail the job.
+# 73 is current value we obtain.
 
 omit =
     */tests/*

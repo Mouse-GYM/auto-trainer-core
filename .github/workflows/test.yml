@@ -9,6 +9,8 @@ on:
 jobs:
   test:
     strategy:
+      fail-fast: false  # keep others running if a single fails.
+        # to allow get all the coverage combined at the end.
       matrix:
         python_version: [ "3.8", "3.9", "3.10", "3.11", "3.12" ]
     name: Install core non-editable and run its tests
@@ -40,7 +42,9 @@ jobs:
 
       - name: Check that the installed core is the one under test
         run: |
-          python - <<'EOF'
+          # -E : skip any env. variable, 
+          # notably possibly PYTHONOPTIMIZE which turns off assert as used below.
+          python -E - <<'EOF'
           import importlib.metadata
           import autotrainer.core
           version = autotrainer.core.__version__
@@ -53,6 +57,7 @@ jobs:
       - name: Test auto-trainer-core
         run: |
           export COVERAGE_PROCESS_START="$PWD/.coveragerc"
+          export COVERAGE_FILE="$PWD/.coverage"
           python -m coverage run --parallel-mode -m pytest -v --color=yes
 
       - name: Upload coverage data
@@ -68,7 +73,7 @@ jobs:
     name: Combine coverage and enforce threshold
     runs-on: ubuntu-latest
     needs: test
-    if: always()
+    if: ${{ !cancelled() }}
     steps:
       - uses: actions/checkout@v6.0.3
       - uses: actions/setup-python@v6.2.0
@@ -81,13 +86,19 @@ jobs:
           pattern: coverage-data-*
           merge-multiple: true
       - name: Combine and report
+        env:
+          COV: "uvx --from coverage>=7.10,<8 coverage"
         run: |
+          uvx coverage --version
           uvx coverage combine
-          uvx coverage html --skip-covered --skip-empty
-          uvx coverage report --format=markdown >> "$GITHUB_STEP_SUMMARY"
+          uvx coverage html --fail-under=0 --skip-covered --skip-empty
+          uvx coverage report --fail-under=0 --format=markdown >> "$GITHUB_STEP_SUMMARY"
+      - name: Enforce coverage threshold
+        if: ${{ needs.test.result == 'success' && github.event_name == 'pull_request' }}
+        run: |
           uvx coverage report
       - name: Upload HTML report  # on failure
-        if: always()
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v7.0.1
         with:
           name: html-coverage-report
