@@ -1,3 +1,5 @@
+import pytest
+
 from autotrainer.core import MeasurementData
 
 
@@ -34,3 +36,23 @@ def test_from_file_parses_legacy_integer_pressure(tmp_path):
     m1, m2 = measurements
     assert m1.head_contact is False
     assert m2.head_contact is True
+
+
+@pytest.mark.parametrize("pressure_text, expected", [
+    ("-15", -15.0),
+    ("-15.5", -15.5),
+    ("0", 0.0),
+    ("0.0", 0.0),
+    ("-0.0", 0.0),
+])
+def test_from_file_parses_negative_and_zero_pressure(tmp_path, pressure_text, expected):
+    path = tmp_path.joinpath("monitor.csv")
+    path.write_text(
+        "Time, Index, Weight, Switch, Pressure, Temperature, Humidity, LoadCellEngaged\n"
+        f"1794448799.908209, 618249926486883, 0.03, 0, {pressure_text}, 24.68, 37.68, 0\n"
+    )
+
+    (measurement,) = MeasurementData.from_file(str(path))
+
+    assert measurement.pressure == expected
+    assert isinstance(measurement.pressure, float)
