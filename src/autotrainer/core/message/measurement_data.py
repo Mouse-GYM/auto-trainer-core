@@ -17,7 +17,7 @@ class MeasurementData(MeasurementMessageProtocol):
     when_val: float
     index_val: int
     weight_val: float
-    pressure_val: int
+    pressure_val: float
     temperature_val: float
     humidity_val: float
     head_contact_val: bool
@@ -39,7 +39,7 @@ class MeasurementData(MeasurementMessageProtocol):
         return self.weight_val
 
     @property
-    def pressure(self) -> int:
+    def pressure(self) -> float:
         return self.pressure_val
 
     @property
@@ -69,11 +69,15 @@ class MeasurementData(MeasurementMessageProtocol):
                 if line[0] == "Time":
                     continue
 
-                measurement = cls(when_val=float(line[0]), index_val=int(float(line[1])),
-                                  weight_val=float(line[2]),
-                                  head_contact_val=int(line[3]) == 1, pressure_val=int(line[4]),
-                                  temperature_val=float(line[5]),
-                                  humidity_val=float(line[6]))
+                measurement = cls(
+                    when_val=float(line[0]),
+                    index_val=int(float(line[1])),
+                    weight_val=float(line[2]),
+                    head_contact_val=int(line[3]) == 1,
+                    pressure_val=float(line[4]),
+                    temperature_val=float(line[5]),
+                    humidity_val=float(line[6]),
+                )
 
                 measurements.append(measurement)
 
