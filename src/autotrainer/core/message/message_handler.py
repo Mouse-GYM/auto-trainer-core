@@ -22,9 +22,13 @@ class CommandResult:
     succeeded: bool = False
     error: Optional[str] = None
     uuid_nacks: Optional[List[int]] = None
+    # True when the device answered this request without performing it itself, because it was merged into, or
+    # rate-limited after, an identical command. `succeeded` is then the outcome reported for the request.
+    skipped: bool = False
 
     def __str__(self) -> str:
-        return f"succeeded={self.succeeded}, uuid_nacks={self.uuid_nacks}, error={self.error}"
+        return (f"succeeded={self.succeeded}, skipped={self.skipped}, uuid_nacks={self.uuid_nacks}, "
+                f"error={self.error}")
 
     def __bool__(self):
         return self.succeeded
