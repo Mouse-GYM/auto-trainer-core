@@ -12,7 +12,10 @@ def test_from_file_parses_float_pressure(tmp_path):
     measurements = MeasurementData.from_file(str(path))
 
     assert [m.pressure for m in measurements] == [1671.0, 1663.5]
-    assert [m.head_contact for m in measurements] == [False, True]
+
+    m1, m2 = measurements
+    assert m1.head_contact is False
+    assert m2.head_contact is True
 
 
 def test_from_file_parses_legacy_integer_pressure(tmp_path):
@@ -27,4 +30,7 @@ def test_from_file_parses_legacy_integer_pressure(tmp_path):
 
     assert [m.pressure for m in measurements] == [156.0, 157.0]
     assert all(isinstance(m.pressure, float) for m in measurements)
-    assert [m.head_contact for m in measurements] == [False, True]
+
+    m1, m2 = measurements
+    assert m1.head_contact is False
+    assert m2.head_contact is True
