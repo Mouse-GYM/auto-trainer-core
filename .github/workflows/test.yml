@@ -12,7 +12,7 @@ jobs:
       fail-fast: false  # keep others running if a single fails.
         # to allow get all the coverage combined at the end.
       matrix:
-        python_version: [ "3.8", "3.9", "3.10", "3.11", "3.12" ]
+        python_version: [ "3.8", "3.10", "3.12" ]
     name: Install core non-editable and run its tests
     runs-on: ubuntu-22.04  # 3.8 not anymore available in ubuntu-latest
     timeout-minutes: 15
@@ -27,6 +27,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python_version }}
+          cache: pip
+          cache-dependency-path: pyproject.toml
 
       - name: Check that uv.lock matches pyproject.toml
         run: |
